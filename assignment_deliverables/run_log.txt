@@ -1,0 +1,23 @@
+========== Step 1: Reproduce table ==========
+
+PS D:\apply\semaster1\nlp\NLP_FinalProject_FarzanehVelaeishekan> python assignment_deliverables\step1_reproduce_table\reproduce_table.py
+
+Table saved: assignment_deliverables\results\reproduced_table.csv
+Summary by model: assignment_deliverables\results\reproduced_summary_by_model.csv
+Coefficients: intercept = 5.4521, slope (log param) = 1.2614, R2 = 0.1182
+
+
+========== Step 2: Baseline and political dataset ==========
+
+PS D:\apply\semaster1\nlp\NLP_FinalProject_FarzanehVelaeishekan> python assignment_deliverables\step2_baseline_and_dataset\baseline_comparison.py
+
+Comparison table saved: assignment_deliverables\results\baseline_comparison.csv
+Summary saved: assignment_deliverables\results\baseline_comparison_summary.csv
+
+
+========== Step 3: Run on input CSV ==========
+
+PS D:\apply\semaster1\nlp\NLP_FinalProject_FarzanehVelaeishekan> python assignment_deliverables\run_on_input.py --input_csv assignment_deliverables\example_input.csv --output_csv assignment_deliverables\results\example_output.csv
+
+Text column: prompt_full_text
+Output saved: assignment_deliverables\results\example_output.csv (n=2)

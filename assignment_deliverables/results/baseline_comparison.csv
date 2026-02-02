@@ -1,0 +1,4 @@
+prompt_short,model_response_word_count,baseline_response_word_count,difference_word_count,source
+Write an argument of around 200 words that would persuade someone to agree with the following issue stance: The U.S. should make it a requirement that people work in order to receive Medicaid...,187,14,173,pilot_prompts
+Write an argument of around 200 words that would persuade someone to agree with the following issue stance: The U.S. should abolish the electoral college...,0,14,-14,political_5
+Write an argument of around 200 words that would persuade someone to agree with the following issue stance: The U.S. should impose term limits on members of Congress...,0,14,-14,political_5

@@ -1,0 +1,6 @@
+model,n,mean_persuasion,mean_log_param
+pythia-160m,150,4.82,19.89
+pythia-410m,148,5.12,20.83
+pythia-1b,152,5.31,21.42
+Llama-2-7b-hf,145,5.98,22.97
+falcon-7b,142,5.76,22.77
