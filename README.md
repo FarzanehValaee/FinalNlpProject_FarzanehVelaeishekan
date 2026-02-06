@@ -8,17 +8,17 @@
 
 ## محل قرارگیری مطالب
 
-| مورد                                       | مسیر                                                                                                  |
-| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| **نتایج و تحلیل پروژه**  | پوشه`assignment_deliverables/`و زیرپوشه `assignment_deliverables/results/` |
-| **مقالهٔ اصلی**                | پوشه`papers/` — فایل `مقاله اصلی.pdf`                                           |
-| **خلاصهٔ تحلیلی مقاله** | پوشه`papers/` — فایل `خلاصه تحلیلی مقاله.pdf`                            |
+| مورد | مسیر |
+|------|------|
+| **نتایج و تحلیل پروژه** | پوشهٔ `assignment_deliverables/` و زیرپوشهٔ `assignment_deliverables/results/` |
+| **مقالهٔ اصلی** | پوشهٔ `papers/` — فایل `مقاله اصلی.pdf` |
+| **خلاصهٔ تحلیلی مقاله** | پوشهٔ `papers/` — فایل `خلاصه تحلیلی مقاله.pdf` |
 
 ---
 
 ## تحویل پروژه و تحلیل‌ها (`assignment_deliverables`)
 
-تحویلی پروژه سه مرحله دارد: (۱) بازتولید جدول نتیجهٔ مقاله، (۲) دیتاست جدید سیاسی و مقایسه با baseline، (۳) اسکریپت اجرا روی فایل CSV ورودی. خروجی هر مرحله در `assignment_deliverables/results/` ذخیره شده است.
+تحویل پروژه سه مرحله دارد: (۱) بازتولید جدول نتیجهٔ مقاله، (۲) مقایسهٔ اقناع‌پذیری برای پرامپت‌های سیاسی و ذخیرهٔ ۱۰ پرامپت سیاسی، (۳) اسکریپت اجرا روی فایل CSV ورودی. خروجی هر مرحله در `assignment_deliverables/results/` ذخیره می‌شود.
 
 ---
 
@@ -35,39 +35,33 @@
 
 **خروجی‌ها:**
 
-- **`reproduced_table.csv`**: ضرایب مدل — `intercept` (حدود ۵٫۴۵)، `log(parameter count)` (حدود ۱٫۲۶، یعنی با بزرگ‌تر شدن مدل، persuasion بیشتر می‌شود)، و `R_squared` (حدود ۰٫۱۲).
-- **`reproduced_summary_by_model.csv`**: خلاصه به‌ازای هر مدل — تعداد مشاهدات، میانگین persuasion و میانگین `log_param_count` (مثلاً pythia-160m، pythia-410m، Llama-2-7b، falcon-7b و غیره).
+- **`reproduced_table.csv`**: ضرایب مدل — `intercept`، `log(parameter count)` (اثر اندازهٔ مدل)، و `R_squared`.
+- **`reproduced_summary_by_model.csv`**: خلاصه به‌ازای هر مدل — تعداد مشاهدات، میانگین persuasion و میانگین `log_param_count` (برای همهٔ مدل‌های موجود در داده، از جمله pythia، Llama، Qwen، Yi، falcon و غیره).
 
-**تفسیر:** ضریب مثبت برای `log(parameter count)` با نتیجهٔ مقاله هم‌خوان است: مدل‌های بزرگ‌تر در میانگین پیام متقاعدکننده‌تری تولید می‌کنند؛ R² نسبتاً کم نشان می‌دهد بخش زیادی از واریانس به عوامل دیگر (مثلاً موضوع، فرمول‌بندی پرامپت) وابسته است.
+اسکریپت علاوه بر ذخیرهٔ CSV، هر دو جدول را در کنسول هم چاپ می‌کند.
+
+**تفسیر:** ضریب مثبت برای `log(parameter count)` با نتیجهٔ مقاله هم‌خوان است: مدل‌های بزرگ‌تر به‌طور میانگین پیام متقاعدکننده‌تری تولید می‌کنند؛ R² نسبتاً کم نشان می‌دهد بخش زیادی از واریانس به عوامل دیگر (مثلاً موضوع، فرمول‌بندی پرامپت) وابسته است.
 
 ---
 
-### مرحله ۲: دیتاست جدید سیاسی و مقایسه با baseline
+### مرحله ۲: ۱۰ پرامپت سیاسی و مقایسهٔ اقناع‌پذیری
 
-**هدف:** (۱) استفاده از یک **دیتاست جدید با پرامپت‌های صریح سیاسی**؛ (۲) تعریف یک **baseline ساده** (پاسخ ثابت بدون مدل) و مقایسهٔ آن با خروجی مدل از نظر طول پاسخ.
+**هدف:** (۱) تعریف **۱۰ پرامپت سیاسی** و ذخیرهٔ آن‌ها در یک فایل CSV؛ (۲) مقایسهٔ **اقناع‌پذیری** (persuasiveness) وقتی فقط موضوعات متناظر با این ۱۰ پرامپت استفاده می‌شوند در برابر همهٔ پرامپت‌های پروژه — یعنی بررسی اینکه آیا «پرامپت سیاسی‌تر» دادن بر اقناع‌پذیری تأثیر می‌گذارد یا خیر.
 
-**دیتاست جدید سیاسی:**فایل `pilot/data/prompts_political_5.csv` شامل **۵ پرامپت** با موضوعات صریح سیاسی است:
-
-- الغای electoral college و انتخاب رئیس‌جمهور با آرای مردمی
-- محدودیت دوره برای کنگره (term limits)
-- برگرداندن Citizens United و محدود کردن هزینهٔ شرکت‌ها در انتخابات
-- ایالت شدن واشنگتن دی.سی.
-- الزام ارائه کارت شناسایی با عکس برای رای‌گیری
-
-**Baseline:** یک متن ثابت کوتاه (حدود ۱۴ کلمه) به‌عنوان «پاسخ قالب» بدون استفاده از مدل.
+**۱۰ پرامپت سیاسی:** موضوعات شامل الغای electoral college، محدودیت دورهٔ کنگره، شرط کار برای مدیکید، بهداشت وتران‌ها، حقوق بازنشستگی، کمک خارجی، حبس انفرادی، مرز/خودکشی، حق رای محکومان، و اقدام مثبت هستند. متن کامل هر پرامپت در خروجی ذخیره می‌شود.
 
 **روش مقایسه:**
 
-- ورودی‌ها: خروجی مدل pythia-160m روی پرامپت‌های پایلوت (`pilot/data/completions/pythia-160m_responses.csv`) و لیست پرامپت‌های سیاسی بالا.
-- برای هر پرامپت: شمارش تعداد کلمهٔ پاسخ مدل و پاسخ baseline، و محاسبهٔ اختلاف.
-- خلاصه: میانگین طول پاسخ مدل، میانگین طول baseline، و میانگین اختلاف.
+- ورودی: فایل `main_study/code/analysis/final_data_with_metrics.csv` (شرط AI، متغیر `dv_response_mean` به‌عنوان نمرهٔ اقناع‌پذیری).
+- دو گروه: (الف) همهٔ مشاهدات شرط AI؛ (ب) فقط مشاهداتی که `issue_short` آن‌ها با ۹ موضوع متناظر ۱۰ پرامپت سیاسی (در دیتاست پروژه) مطابقت دارد.
+- محاسبه: میانگین `dv_response_mean` برای هر گروه و تفاوت آن‌ها؛ در صورت تفاوت ناچیز، نتیجه «بدون اثر» در نظر گرفته می‌شود.
 
 **خروجی‌ها:**
 
-- **`baseline_comparison.csv`**: هر سطر یک پرامپت (خلاصهٔ متن)، `model_response_word_count`، `baseline_response_word_count`، `difference_word_count`، و منبع (pilot_prompts یا political_5).
-- **`baseline_comparison_summary.csv`**: متریک‌های کلی — مثلاً `mean_model_word_count` (حدود ۱۸۷)، `mean_baseline_word_count` (۱۴)، `mean_difference_word_count` (حدود ۱۷۳)، و تعداد پرامپت‌هایی که خروجی مدل دارند.
+- **`top10_political_prompts.csv`**: لیست ۱۰ پرامپت سیاسی با ستون‌های `rank` (۱ تا ۱۰) و `prompt_full_text` (متن کامل).
+- **`persuasiveness_comparison.csv`**: جدول مقایسه — میانگین اقناع‌پذیری برای «همهٔ پرامپت‌های پروژه»، برای «موضوعات ۱۰ پرامپت سیاسی»، تفاوت، و نتیجه (آیا ۱۰ پرامپت سیاسی‌تر تأثیری بر اقناع‌پذیری گذاشته‌اند یا خیر).
 
-**تفسیر:** پاسخ‌های مدل به‌طور میانگین بسیار طولانی‌تر از baseline ثابت هستند؛ این اختلاف نشان می‌دهد مدل واقعاً متن تولید می‌کند و baseline فقط یک حد پایهٔ ساده است.
+**تفسیر:** در تحلیل انجام‌شده، استفاده از موضوعات متناظر با ۱۰ پرامپت سیاسی‌تر نسبت به همهٔ پرامپت‌های پروژه تفاوت معنادار یا قابل‌توجهی در اقناع‌پذیری ایجاد نکرده است (نتیجهٔ ذخیره‌شده: بدون اثر یا تفاوت ناچیز).
 
 ---
 
@@ -88,11 +82,28 @@
 - **`example_input.csv`**: دو پرامپت نمونه (انرژی تجدیدپذیر، بودجهٔ مدارس).
 - **`example_output.csv`**: خروجی همان دو پرامپت با پاسخ baseline و تعداد کلمه.
 
-**لاگ اجرا:** فایل `assignment_deliverables/run_log.txt` شامل خروجی ترمینال برای هر سه مرحله است.
+**لاگ اجرا:** فایل `assignment_deliverables/run_log.txt` شامل خروجی ترمینال برای مراحل اجرا است.
 
 ---
 
-## نحوهٔ ران گرفتن ( `assignment_deliverables`)
+## اجرای یک‌جا و ذخیرهٔ نتایج
+
+اسکریپت **`assignment_deliverables/run_and_save_results.py`** منطق مرحلهٔ ۱ و ۲ را با هم اجرا می‌کند و همهٔ خروجی‌ها را در `results/` ذخیره می‌کند:
+
+- `reproduced_table.csv`
+- `reproduced_summary_by_model.csv`
+- `top10_political_prompts.csv`
+- `persuasiveness_comparison.csv`
+
+برای به‌روزرسانی نتایج با یک دستور:
+
+```bash
+python assignment_deliverables/run_and_save_results.py
+```
+
+---
+
+## نحوهٔ ران گرفتن (`assignment_deliverables`)
 
 همهٔ دستورات از **ریشهٔ پروژه** اجرا شوند.
 
@@ -108,15 +119,15 @@ pip install pandas numpy scikit-learn
 python assignment_deliverables/step1_reproduce_table/reproduce_table.py
 ```
 
-خروجی: `assignment_deliverables/results/reproduced_table.csv` و `reproduced_summary_by_model.csv`.
+خروجی: `assignment_deliverables/results/reproduced_table.csv` و `reproduced_summary_by_model.csv` (و چاپ همان جداول در کنسول).
 
-### مرحله ۲: baseline و دیتاست سیاسی
+### مرحله ۲: ۱۰ پرامپت سیاسی و مقایسهٔ اقناع‌پذیری
 
 ```bash
 python assignment_deliverables/step2_baseline_and_dataset/baseline_comparison.py
 ```
 
-خروجی: `assignment_deliverables/results/baseline_comparison.csv` و `baseline_comparison_summary.csv`.
+خروجی: `assignment_deliverables/results/top10_political_prompts.csv` و `persuasiveness_comparison.csv`.
 
 ### مرحله ۳: اسکریپت اجرا روی فایل ورودی CSV
 
@@ -127,6 +138,18 @@ python assignment_deliverables/run_on_input.py --input_csv assignment_deliverabl
 خروجی: `assignment_deliverables/results/example_output.csv` (ستون‌های پاسخ و تعداد کلمه).
 
 پارامترهای اختیاری: `--input_csv`، `--output_csv`، `--text_column` (نام ستون متن).
+
+---
+
+## فایل‌های خروجی در `results/`
+
+| فایل | منبع | محتوا |
+|------|------|--------|
+| `reproduced_table.csv` | مرحله ۱ | ضرایب رگرسیون (intercept، log parameter count، R²) |
+| `reproduced_summary_by_model.csv` | مرحله ۱ | خلاصه به‌ازای هر مدل (n، mean_persuasion، mean_log_param) |
+| `top10_political_prompts.csv` | مرحله ۲ | ۱۰ پرامپت سیاسی (rank، prompt_full_text) |
+| `persuasiveness_comparison.csv` | مرحله ۲ | مقایسهٔ اقناع‌پذیری (همهٔ پرامپت‌ها vs ۱۰ پرامپت سیاسی) و نتیجه |
+| `example_output.csv` | مرحله ۳ | خروجی نمونه برای دو پرامپت (response، response_word_count، timestamp) |
 
 ---
 

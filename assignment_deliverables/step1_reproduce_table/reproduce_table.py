@@ -13,6 +13,21 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 DATA_PATH = os.path.join(REPO_ROOT, "main_study", "code", "analysis", "final_data_with_metrics.csv")
 OUTPUT_PATH = os.path.join(RESULTS_DIR, "reproduced_table.csv")
 
+# عنوان‌های فارسی برای چاپ جداول
+TABLE_1_TITLE = "جدول ۱ — ضرایب رگرسیون (اقناع‌پذیری ~ log(parameter count))"
+TABLE_2_TITLE = "جدول ۲ — خلاصه به‌ازای هر مدل (تعداد، میانگین اقناع‌پذیری، میانگین log پارامتر)"
+
+
+def print_table(title: str, df: pd.DataFrame) -> None:
+    """چاپ یک عنوان و جدول در کنسول."""
+    print()
+    print("=" * 60)
+    print(title)
+    print("=" * 60)
+    print(df.to_string(index=False))
+    print()
+
+
 def main():
     if not os.path.exists(DATA_PATH):
         print(f"Error: data file not found: {DATA_PATH}")
@@ -54,15 +69,21 @@ def main():
         {"term": "R_squared", "estimate": round(r2, 4), "note": "simple linear"},
     ]
     table_df = pd.DataFrame(table_rows)
-    table_df.to_csv(OUTPUT_PATH, index=False, encoding="utf-8-sig")
-
-    # ذخیره خلاصه به‌ازای مدل در فایل دوم (اختیاری)
     summary_path = os.path.join(RESULTS_DIR, "reproduced_summary_by_model.csv")
+
+    # اول ذخیرهٔ نتایج (حتی اگر چاپ بعداً خطا بدهد)
+    table_df.to_csv(OUTPUT_PATH, index=False, encoding="utf-8-sig")
     summary.to_csv(summary_path, index=False, encoding="utf-8-sig")
 
-    print(f"Table saved: {OUTPUT_PATH}")
-    print(f"Summary by model: {summary_path}")
-    print("Coefficients: intercept = {:.4f}, slope (log param) = {:.4f}, R2 = {:.4f}".format(intercept, slope, r2))
+    # چاپ جداول در کنسول (در صورت خطای encoding نادیده گرفته می‌شود)
+    try:
+        print("Output: two tables. Table 1: regression coefficients. Table 2: summary by model.")
+        print_table(TABLE_1_TITLE, table_df)
+        print_table(TABLE_2_TITLE, summary)
+        print("Saved:", OUTPUT_PATH, summary_path)
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        print("Results saved. (Console print skipped due to encoding.)")
+        print("Files:", OUTPUT_PATH, summary_path)
     return 0
 
 if __name__ == "__main__":

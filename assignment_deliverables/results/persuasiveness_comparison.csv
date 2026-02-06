@@ -1,0 +1,5 @@
+﻿group,description,n_observations,mean_persuasiveness
+all_project_prompts,همهٔ پرامپت‌های پروژه (شرط AI),19529,56.2905
+top10_political_prompts,موضوعات متناظر با ۱۰ پرامپت سیاسی‌تر,17609,54.7856
+difference,تفاوت میانگین (۱۰ سیاسی − همه),,-1.5049
+conclusion,آیا ۱۰ پرامپت سیاسی‌تر بر اقناع‌پذیری تأثیر گذاشته‌اند؟,marginal,تفاوت ناچیز

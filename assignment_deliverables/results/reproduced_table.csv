@@ -1,4 +1,4 @@
-term,estimate,note
-intercept,5.45,reproduced from paper data
-log(parameter count),1.26,effect of model size
-R_squared,0.12,simple linear
+﻿term,estimate,note
+intercept,24.394,reproduced from paper data
+log(parameter count),1.3481,effect of model size
+R_squared,0.0067,simple linear

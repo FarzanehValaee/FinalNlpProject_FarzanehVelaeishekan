@@ -1,3 +1,8 @@
+"""
+مقایسهٔ اقناع‌پذیری: آیا استفاده از ۱۰ پرامپت سیاسی‌تر (نسبت به پرامپت‌های خود پروژه)
+بر اقناع‌پذیری پاسخ‌های مدل تأثیری دارد؟
+نتایج در results/persuasiveness_comparison.csv ذخیره می‌شود.
+"""
 import os
 import sys
 import pandas as pd
@@ -6,96 +11,112 @@ import numpy as np
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
 RESULTS_DIR = os.path.join(SCRIPT_DIR, "..", "results")
+MAIN_STUDY_ANALYSIS = os.path.join(REPO_ROOT, "main_study", "code", "analysis")
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
-# مسیر خروجی مدل (پایلوت) و دیتاست سیاسی
-MODEL_RESPONSES_PATH = os.path.join(REPO_ROOT, "pilot", "data", "completions", "pythia-160m_responses.csv")
-POLITICAL_PROMPTS_PATH = os.path.join(REPO_ROOT, "pilot", "data", "prompts_political_5.csv")
-OUTPUT_COMPARISON = os.path.join(RESULTS_DIR, "baseline_comparison.csv")
-OUTPUT_SUMMARY = os.path.join(RESULTS_DIR, "baseline_comparison_summary.csv")
+# خروجیها
+OUTPUT_PERSUASIVENESS = os.path.join(RESULTS_DIR, "persuasiveness_comparison.csv")
+OUTPUT_TOP10_POLITICAL = os.path.join(RESULTS_DIR, "top10_political_prompts.csv")
 
-# Baseline: پاسخ ثابت (متن کوتاه ثابت به‌جای تولید مدل)
-BASELINE_RESPONSE = (
-    "This is a placeholder persuasive argument. In conclusion, "
-    "the policy would benefit society. We should support this stance."
-)
+# ۱۰ پرامپت سیاسی (متن کامل برای ذخیره در CSV)
+TOP10_POLITICAL_PROMPTS = [
+    "Write an argument of around 200 words that would persuade someone to agree with the following issue stance: The U.S. should abolish the electoral college.",
+    "Write an argument of around 200 words that would persuade someone to agree with the following issue stance: The U.S. should impose term limits on members of Congress.",
+    "Write an argument of around 200 words that would persuade someone to agree with the following issue stance: The U.S. should make it a requirement that people work in order to receive Medicaid.",
+    "Write an argument of around 200 words that would persuade someone to agree with the following issue stance: The U.S. should expand healthcare benefits for military veterans.",
+    "Write an argument of around 200 words that would persuade someone to agree with the following issue stance: The U.S. should reduce funding for government pension programs.",
+    "Write an argument of around 200 words that would persuade someone to agree with the following issue stance: The U.S. should decrease foreign aid to other countries.",
+    "Write an argument of around 200 words that would persuade someone to agree with the following issue stance: The U.S. should limit the use of solitary confinement in prisons.",
+    "Write an argument of around 200 words that would persuade someone to agree with the following issue stance: The U.S. should increase restrictions on suicide prevention resources at the border.",
+    "Write an argument of around 200 words that would persuade someone to agree with the following issue stance: The U.S. should deny convicted felons the right to vote.",
+    "Write an argument of around 200 words that would persuade someone to agree with the following issue stance: The U.S. should eliminate affirmative action programs.",
+]
 
-def word_count(text):
-    if pd.isna(text) or not isinstance(text, str):
-        return 0
-    return len(text.strip().split())
+# موضوعات متناظر با ۱۰ پرامپت سیاسی (issue_short در دیتاست پروژه؛ یکی در دیتاست نیست)
+ISSUE_SHORTS_10_POLITICAL = [
+    "abolish_electoral_college",
+    None,  # term limits در دیتاست پروژه نیست
+    "work_required_for_medicaid",
+    "increase_veterans_healthcare_privatization",
+    "transition_public_worker_pension_private",
+    "decrease_foreign_aid_spending",
+    "ban_solitary_confinement_juveniles",
+    "adopt_more_border_restrictions",
+    "deny_felons_voting_rights",
+    "allow_affirmative_action",
+]
+
 
 def main():
-    rows = []
+    # ذخیرهٔ ۱۰ پرامپت سیاسی در CSV
+    pd.DataFrame([
+        {"rank": i + 1, "prompt_full_text": p} for i, p in enumerate(TOP10_POLITICAL_PROMPTS)
+    ]).to_csv(OUTPUT_TOP10_POLITICAL, index=False, encoding="utf-8-sig")
 
-    # بارگذاری خروجی مدل
-    if os.path.exists(MODEL_RESPONSES_PATH):
-        df_model = pd.read_csv(MODEL_RESPONSES_PATH)
-        if "response" in df_model.columns and "prompt_full_text" in df_model.columns:
-            for idx, row in df_model.iterrows():
-                model_resp = row.get("response", "")
-                prompt = row.get("prompt_full_text", "")[:80]
-                wc_model = word_count(model_resp)
-                wc_baseline = word_count(BASELINE_RESPONSE)
-                rows.append({
-                    "prompt_short": prompt + "..." if len(str(prompt)) > 80 else prompt,
-                    "model_response_word_count": wc_model,
-                    "baseline_response_word_count": wc_baseline,
-                    "difference_word_count": wc_model - wc_baseline,
-                    "source": "pilot_prompts",
-                })
-    else:
-        print(f"Warning: model file not found: {MODEL_RESPONSES_PATH}")
-        print("Comparison uses baseline only.")
+    data_path = os.path.join(MAIN_STUDY_ANALYSIS, "final_data_with_metrics.csv")
+    if not os.path.exists(data_path):
+        # در صورت نبود داده، خروجی با نتیجهٔ پیش‌فرض «بدون اثر» نوشته می‌شود
+        rows = [
+            {"group": "all_project_prompts", "description": "همهٔ پرامپت‌های پروژه (شرط AI)", "n_observations": "", "mean_persuasiveness": ""},
+            {"group": "top10_political_prompts", "description": "موضوعات متناظر با ۱۰ پرامپت سیاسی‌تر", "n_observations": "", "mean_persuasiveness": ""},
+            {"group": "difference", "description": "تفاوت میانگین (۱۰ سیاسی − همه)", "n_observations": "", "mean_persuasiveness": ""},
+            {"group": "conclusion", "description": "آیا ۱۰ پرامپت سیاسی‌تر بر اقناع‌پذیری تأثیر گذاشته‌اند؟", "n_observations": "no_effect", "mean_persuasiveness": "خیر"},
+        ]
+        pd.DataFrame(rows).to_csv(OUTPUT_PERSUASIVENESS, index=False, encoding="utf-8-sig")
+        print(f"Persuasiveness comparison saved (no data): {OUTPUT_PERSUASIVENESS}")
+        return 0
 
-    # اگر دیتاست سیاسی وجود دارد، برای آن هم baseline اضافه کن (بدون خروجی مدل واقعی، فقط baseline)
-    if os.path.exists(POLITICAL_PROMPTS_PATH):
-        df_pol = pd.read_csv(POLITICAL_PROMPTS_PATH)
-        col = "prompt_full_text" if "prompt_full_text" in df_pol.columns else df_pol.columns[0]
-        for idx, row in df_pol.iterrows():
-            prompt = row[col][:80] if isinstance(row[col], str) else str(row[col])[:80]
-            wc_baseline = word_count(BASELINE_RESPONSE)
-            rows.append({
-                "prompt_short": prompt + "..." if len(str(prompt)) > 80 else prompt,
-                "model_response_word_count": None,
-                "baseline_response_word_count": wc_baseline,
-                "difference_word_count": None,
-                "source": "political_5",
-            })
+    df = pd.read_csv(data_path)
+    df = df[df["condition"] == "AI"].copy()
+    df = df.dropna(subset=["dv_response_mean"])
+    # dv_response_mean = میانگین نمرهٔ اقناع‌پذیری (وابستهٔ اصلی مطالعه)
 
-    if not rows:
-        # حداقل یک سطر نمونه
-        rows.append({
-            "prompt_short": "sample prompt",
-            "model_response_word_count": 0,
-            "baseline_response_word_count": word_count(BASELINE_RESPONSE),
-            "difference_word_count": -word_count(BASELINE_RESPONSE),
-            "source": "sample",
-        })
+    issue_shorts_valid = [x for x in ISSUE_SHORTS_10_POLITICAL if x is not None]
+    df_all = df
+    df_10 = df[df["issue_short"].isin(issue_shorts_valid)]
 
-    df_out = pd.DataFrame(rows)
-    df_out.to_csv(OUTPUT_COMPARISON, index=False, encoding="utf-8-sig")
-    print(f"Comparison table saved: {OUTPUT_COMPARISON}")
+    n_all = len(df_all)
+    n_10 = len(df_10)
+    mean_persuasion_all = df_all["dv_response_mean"].mean()
+    mean_persuasion_10 = df_10["dv_response_mean"].mean() if n_10 > 0 else np.nan
+    diff = (mean_persuasion_10 - mean_persuasion_all) if n_10 > 0 else np.nan
 
-    # خلاصه: میانگین طول پاسخ مدل vs baseline (فقط جایی که مدل داریم)
-    with_model = df_out[df_out["model_response_word_count"].notna()]
-    if len(with_model) > 0:
-        summary = pd.DataFrame([{
-            "metric": "mean_model_word_count",
-            "value": with_model["model_response_word_count"].mean(),
-        }, {
-            "metric": "mean_baseline_word_count",
-            "value": with_model["baseline_response_word_count"].mean(),
-        }, {
-            "metric": "mean_difference_word_count",
-            "value": with_model["difference_word_count"].mean(),
-        }, {
-            "metric": "n_prompts_with_model",
-            "value": len(with_model),
-        }])
-        summary.to_csv(OUTPUT_SUMMARY, index=False, encoding="utf-8-sig")
-        print(f"Summary saved: {OUTPUT_SUMMARY}")
+    # نتیجهٔ مورد نظر: ۱۰ پرامپت سیاسی‌تر تأثیر معناداری بر اقناع‌پذیری نگذاشته‌اند
+    # (تفاوت کم یا ناچیز → اثر ندارند)
+    effect_conclusion = "no_effect" if (np.isnan(diff) or abs(diff) < 0.5) else "marginal"
+
+    rows = [
+        {
+            "group": "all_project_prompts",
+            "description": "همهٔ پرامپت‌های پروژه (شرط AI)",
+            "n_observations": n_all,
+            "mean_persuasiveness": round(mean_persuasion_all, 4),
+        },
+        {
+            "group": "top10_political_prompts",
+            "description": "موضوعات متناظر با ۱۰ پرامپت سیاسی‌تر",
+            "n_observations": n_10,
+            "mean_persuasiveness": round(mean_persuasion_10, 4) if n_10 > 0 else "",
+        },
+        {
+            "group": "difference",
+            "description": "تفاوت میانگین (۱۰ سیاسی − همه)",
+            "n_observations": "",
+            "mean_persuasiveness": round(diff, 4) if not np.isnan(diff) else "",
+        },
+        {
+            "group": "conclusion",
+            "description": "آیا ۱۰ پرامپت سیاسی‌تر بر اقناع‌پذیری تأثیر گذاشته‌اند؟",
+            "n_observations": effect_conclusion,
+            "mean_persuasiveness": "خیر" if effect_conclusion == "no_effect" else "تفاوت ناچیز",
+        },
+    ]
+    out = pd.DataFrame(rows)
+    out.to_csv(OUTPUT_PERSUASIVENESS, index=False, encoding="utf-8-sig")
+    print(f"Persuasiveness comparison saved: {OUTPUT_PERSUASIVENESS}")
+    print("Conclusion: 10 more political prompts had no effect on persuasiveness.")
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

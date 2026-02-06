@@ -1,5 +1,0 @@
-metric,value
-mean_model_word_count,187.0
-mean_baseline_word_count,14.0
-mean_difference_word_count,173.0
-n_prompts_with_model,1
