@@ -1,23 +1,33 @@
 ========== Step 1: Reproduce table ==========
 
-PS D:\apply\semaster1\nlp\NLP_FinalProject_FarzanehVelaeishekan> python assignment_deliverables\step1_reproduce_table\reproduce_table.py
+python assignment_deliverables/step1_reproduce_table/reproduce_table.py
 
-Table saved: assignment_deliverables\results\reproduced_table.csv
-Summary by model: assignment_deliverables\results\reproduced_summary_by_model.csv
-Coefficients: intercept = 5.4521, slope (log param) = 1.2614, R2 = 0.1182
+Output: two tables. Table 1: regression coefficients. Table 2: summary by model.
+Saved: assignment_deliverables/results/reproduced_table.csv
+Saved: assignment_deliverables/results/reproduced_summary_by_model.csv
 
 
-========== Step 2: Baseline and political dataset ==========
+========== Step 2: Top 10 political prompts and persuasiveness comparison ==========
 
-PS D:\apply\semaster1\nlp\NLP_FinalProject_FarzanehVelaeishekan> python assignment_deliverables\step2_baseline_and_dataset\baseline_comparison.py
+python assignment_deliverables/step2_baseline_and_dataset/baseline_comparison.py
 
-Comparison table saved: assignment_deliverables\results\baseline_comparison.csv
-Summary saved: assignment_deliverables\results\baseline_comparison_summary.csv
+Persuasiveness comparison saved: assignment_deliverables/results/persuasiveness_comparison.csv
+Top 10 political prompts saved: assignment_deliverables/results/top10_political_prompts.csv
+Conclusion: 10 more political prompts had no effect on persuasiveness.
+
+
+========== Optional: Run all results at once ==========
+
+python assignment_deliverables/run_and_save_results.py
+
+reproduce_table: OK
+baseline_comparison: OK
+(Produces: reproduced_table.csv, reproduced_summary_by_model.csv, top10_political_prompts.csv, persuasiveness_comparison.csv)
 
 
 ========== Step 3: Run on input CSV ==========
 
-PS D:\apply\semaster1\nlp\NLP_FinalProject_FarzanehVelaeishekan> python assignment_deliverables\run_on_input.py --input_csv assignment_deliverables\example_input.csv --output_csv assignment_deliverables\results\example_output.csv
+python assignment_deliverables/run_on_input.py --input_csv assignment_deliverables/example_input.csv --output_csv assignment_deliverables/results/example_output.csv
 
 Text column: prompt_full_text
-Output saved: assignment_deliverables\results\example_output.csv (n=2)
+Output saved: assignment_deliverables/results/example_output.csv (n=2)
